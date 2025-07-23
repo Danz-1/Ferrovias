@@ -1,100 +1,253 @@
-import pandas as pd
-import streamlit as st
-import folium
-from streamlit_folium import st_folium
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_081431bac008437932ea29045d3d6e66 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
 
-# Dados de exemplo
-dados = [
-    {
-        "nome": "Desvio Porto do Itaqui",
-        "tipo": "Desvio Ferroviário",
-        "status": "Concluída",
-        "lat": -2.592411,
-        "lon": -44.370985,
-        "inicio": "2022-02-01",
-        "fim": "2022-07-01",
-        "foto_antes": "antes1.jpg",
-        "foto_depois": "depois1.jpg"
-    },
-    {
-        "nome": "Soldagem Pátio Anjo da Guarda",
-        "tipo": "Soldagem Aluminotérmica",
-        "status": "Em andamento",
-        "lat": -2.514541,
-        "lon": -44.274047,
-        "inicio": "2023-03-15",
-        "fim": "",
-        "foto_antes": "antes2.jpg",
-        "foto_depois": ""
-    },
-    {
-        "nome": "Recuperação Linha Bacabeira",
-        "tipo": "Manutenção de Linha",
-        "status": "Concluída",
-        "lat": -2.984162,
-        "lon": -44.316283,
-        "inicio": "2021-08-10",
-        "fim": "2021-12-05",
-        "foto_antes": "antes3.jpg",
-        "foto_depois": "depois3.jpg"
-    },
-    {
-        "nome": "Obra Ponte Ferroviária",
-        "tipo": "Infraestrutura",
-        "status": "Em andamento",
-        "lat": -3.037609,
-        "lon": -44.276618,
-        "inicio": "2024-04-01",
-        "fim": "",
-        "foto_antes": "antes4.jpg",
-        "foto_depois": ""
-    }
-]
-df = pd.DataFrame(dados)
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
 
-st.set_page_config(layout="wide")
-st.title("Painel de Obras DL Engenharia")
-st.write("Visualize e filtre as obras no mapa interativo.")
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
 
-# Filtros
-tipos = ["Todos"] + sorted(df["tipo"].unique())
-status_opcoes = ["Todos"] + sorted(df["status"].unique())
-tipo_filtro = st.sidebar.selectbox("Filtrar por Tipo de Serviço", tipos)
-status_filtro = st.sidebar.selectbox("Filtrar por Status", status_opcoes)
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
 
-# Aplicar filtros
-df_filtrado = df.copy()
-if tipo_filtro != "Todos":
-    df_filtrado = df_filtrado[df_filtrado["tipo"] == tipo_filtro]
-if status_filtro != "Todos":
-    df_filtrado = df_filtrado[df_filtrado["status"] == status_filtro]
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_081431bac008437932ea29045d3d6e66" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_081431bac008437932ea29045d3d6e66 = L.map(
+                "map_081431bac008437932ea29045d3d6e66",
+                {
+                    center: [-2.7, -44.3],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 9,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
 
-# Criar mapa centralizado
-m = folium.Map(location=[-2.7, -44.3], zoom_start=9)
-for idx, row in df_filtrado.iterrows():
-    html = f"""
-    <h4>{row['nome']}</h4>
-    <b>Tipo:</b> {row['tipo']}<br>
-    <b>Status:</b> {row['status']}<br>
-    <b>Início:</b> {row['inicio']}<br>
-    <b>Fim:</b> {row['fim'] if row['fim'] else 'Em andamento'}<br>
-    """
-    # Adiciona fotos, se disponíveis
-    if row['foto_antes']:
-        html += f"<b>Antes:</b><br><img src='{row['foto_antes']}' width='120'><br>"
-    if row['foto_depois']:
-        html += f"<b>Depois:</b><br><img src='{row['foto_depois']}' width='120'><br>"
-    popup = folium.Popup(html, max_width=250)
-    color = 'green' if row['status'] == 'Concluída' else 'blue'
-    folium.Marker(
-        location=[row['lat'], row['lon']],
-        popup=popup,
-        icon=folium.Icon(color=color, icon='info-sign')
-    ).add_to(m)
+                }
+            );
 
-# Mostrar mapa no Streamlit
-st_folium(m, width=900, height=600)
+            
 
-# Mostrar tabela filtrada
-with st.expander("Ver tabela de obras filtradas"):
-    st.dataframe(df_filtrado)
+        
+    
+            var tile_layer_44a7e06445bd634acaa1bfed0151f77e = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_44a7e06445bd634acaa1bfed0151f77e.addTo(map_081431bac008437932ea29045d3d6e66);
+        
+    
+            var marker_e53e95b38fb946f7c9baee369c47b6f8 = L.marker(
+                [-2.592411, -44.370985],
+                {
+}
+            ).addTo(map_081431bac008437932ea29045d3d6e66);
+        
+    
+            var icon_8ed2049c5d38348d143e85b31954afc1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_36b115eaf21cb4dbe05564ab155d2aa6 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_d952081d002a0d5eeeb95a5b53cc2bef = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgIDxoND5EZXN2aW8gUG9ydG8gZG8gSXRhcXVpPC9oND4KICAgIDxiPlRpcG86PC9iPiBEZXN2aW8gRmVycm92acOhcmlvPGJyPgogICAgPGI+U3RhdHVzOjwvYj4gQ29uY2x1w61kYTxicj4KICAgIDxiPkluw61jaW86PC9iPiAyMDIyLTAyLTAxPGJyPgogICAgPGI+RmltOjwvYj4gMjAyMi0wNy0wMTxicj4KICAgIDxiPkFudGVzOjwvYj48YnI+PGltZyBzcmM9J2FudGVzMS5qcGcnIHdpZHRoPScxNTAnPjxicj48Yj5EZXBvaXM6PC9iPjxicj48aW1nIHNyYz0nZGVwb2lzMS5qcGcnIHdpZHRoPScxNTAnPjxicj4=" width="250" style="border:none !important;" height="350"></iframe>`)[0];
+                popup_36b115eaf21cb4dbe05564ab155d2aa6.setContent(i_frame_d952081d002a0d5eeeb95a5b53cc2bef);
+            
+        
+
+        marker_e53e95b38fb946f7c9baee369c47b6f8.bindPopup(popup_36b115eaf21cb4dbe05564ab155d2aa6)
+        ;
+
+        
+    
+    
+                marker_e53e95b38fb946f7c9baee369c47b6f8.setIcon(icon_8ed2049c5d38348d143e85b31954afc1);
+            
+    
+            var marker_0466388010f20274f5079820bd136d5a = L.marker(
+                [-2.514541, -44.274047],
+                {
+}
+            ).addTo(map_081431bac008437932ea29045d3d6e66);
+        
+    
+            var icon_83683698212816aab5e0adc4b063e961 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_cb101e0dc7fd82567860b50c847065bd = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_b5d55af1ace10e3dbb939329cfb5889e = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgIDxoND5Tb2xkYWdlbSBQw6F0aW8gQW5qbyBkYSBHdWFyZGE8L2g0PgogICAgPGI+VGlwbzo8L2I+IFNvbGRhZ2VtIEFsdW1pbm90w6lybWljYTxicj4KICAgIDxiPlN0YXR1czo8L2I+IEVtIGFuZGFtZW50bzxicj4KICAgIDxiPkluw61jaW86PC9iPiAyMDIzLTAzLTE1PGJyPgogICAgPGI+RmltOjwvYj4gRW0gYW5kYW1lbnRvPGJyPgogICAgPGI+QW50ZXM6PC9iPjxicj48aW1nIHNyYz0nYW50ZXMyLmpwZycgd2lkdGg9JzE1MCc+PGJyPg==" width="250" style="border:none !important;" height="350"></iframe>`)[0];
+                popup_cb101e0dc7fd82567860b50c847065bd.setContent(i_frame_b5d55af1ace10e3dbb939329cfb5889e);
+            
+        
+
+        marker_0466388010f20274f5079820bd136d5a.bindPopup(popup_cb101e0dc7fd82567860b50c847065bd)
+        ;
+
+        
+    
+    
+                marker_0466388010f20274f5079820bd136d5a.setIcon(icon_83683698212816aab5e0adc4b063e961);
+            
+    
+            var marker_490715034596b492ad582ffb75e6078e = L.marker(
+                [-2.984162, -44.316283],
+                {
+}
+            ).addTo(map_081431bac008437932ea29045d3d6e66);
+        
+    
+            var icon_b56ba7087d9e604e33b49330003d900b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_6744fe8b66ef207299c383a8260c7931 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_e1434be18763bcae9e91f72a295d4046 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgIDxoND5SZWN1cGVyYcOnw6NvIExpbmhhIEJhY2FiZWlyYTwvaDQ+CiAgICA8Yj5UaXBvOjwvYj4gTWFudXRlbsOnw6NvIGRlIExpbmhhPGJyPgogICAgPGI+U3RhdHVzOjwvYj4gQ29uY2x1w61kYTxicj4KICAgIDxiPkluw61jaW86PC9iPiAyMDIxLTA4LTEwPGJyPgogICAgPGI+RmltOjwvYj4gMjAyMS0xMi0wNTxicj4KICAgIDxiPkFudGVzOjwvYj48YnI+PGltZyBzcmM9J2FudGVzMy5qcGcnIHdpZHRoPScxNTAnPjxicj48Yj5EZXBvaXM6PC9iPjxicj48aW1nIHNyYz0nZGVwb2lzMy5qcGcnIHdpZHRoPScxNTAnPjxicj4=" width="250" style="border:none !important;" height="350"></iframe>`)[0];
+                popup_6744fe8b66ef207299c383a8260c7931.setContent(i_frame_e1434be18763bcae9e91f72a295d4046);
+            
+        
+
+        marker_490715034596b492ad582ffb75e6078e.bindPopup(popup_6744fe8b66ef207299c383a8260c7931)
+        ;
+
+        
+    
+    
+                marker_490715034596b492ad582ffb75e6078e.setIcon(icon_b56ba7087d9e604e33b49330003d900b);
+            
+    
+            var marker_8219b82782aa165a9123235d0a350da1 = L.marker(
+                [-3.037609, -44.276618],
+                {
+}
+            ).addTo(map_081431bac008437932ea29045d3d6e66);
+        
+    
+            var icon_3930252e134997f42db1c382e4cbd93e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_a08593b82e7d6e4b284c2ca38c628a92 = L.popup({
+  "maxWidth": 350,
+});
+
+        
+            
+                var i_frame_44266268332f11d41c50fc8cb8dd5e49 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgIDxoND5PYnJhIFBvbnRlIEZlcnJvdmnDoXJpYTwvaDQ+CiAgICA8Yj5UaXBvOjwvYj4gSW5mcmFlc3RydXR1cmE8YnI+CiAgICA8Yj5TdGF0dXM6PC9iPiBFbSBhbmRhbWVudG88YnI+CiAgICA8Yj5JbsOtY2lvOjwvYj4gMjAyNC0wNC0wMTxicj4KICAgIDxiPkZpbTo8L2I+IEVtIGFuZGFtZW50bzxicj4KICAgIDxiPkFudGVzOjwvYj48YnI+PGltZyBzcmM9J2FudGVzNC5qcGcnIHdpZHRoPScxNTAnPjxicj4=" width="250" style="border:none !important;" height="350"></iframe>`)[0];
+                popup_a08593b82e7d6e4b284c2ca38c628a92.setContent(i_frame_44266268332f11d41c50fc8cb8dd5e49);
+            
+        
+
+        marker_8219b82782aa165a9123235d0a350da1.bindPopup(popup_a08593b82e7d6e4b284c2ca38c628a92)
+        ;
+
+        
+    
+    
+                marker_8219b82782aa165a9123235d0a350da1.setIcon(icon_3930252e134997f42db1c382e4cbd93e);
+            
+</script>
+</html>
