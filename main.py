@@ -200,8 +200,10 @@ if not df_filtrado.empty:
     imagens = [row['foto_depois'] for idx, row in df_filtrado.iterrows() if row['foto_depois']]
     cols = st.columns(5)
     for i, img in enumerate(imagens):
-        with cols[i % 5]:
-            st.image(img, use_column_width='always', caption=f"Obra {i+1}")
+        if isinstance(img, str) and img.strip().startswith('http'):
+            with cols[i % 5]:
+                st.image(img, use_container_width=True, caption=f"Obra {i+1}")
+
 
 # --- Tabela expandida ---
 with st.expander("Ver tabela de obras filtradas"):
