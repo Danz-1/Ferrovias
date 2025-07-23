@@ -1,0 +1,100 @@
+import pandas as pd
+import streamlit as st
+import folium
+from streamlit_folium import st_folium
+
+# Dados de exemplo
+dados = [
+    {
+        "nome": "Desvio Porto do Itaqui",
+        "tipo": "Desvio Ferroviário",
+        "status": "Concluída",
+        "lat": -2.592411,
+        "lon": -44.370985,
+        "inicio": "2022-02-01",
+        "fim": "2022-07-01",
+        "foto_antes": "antes1.jpg",
+        "foto_depois": "depois1.jpg"
+    },
+    {
+        "nome": "Soldagem Pátio Anjo da Guarda",
+        "tipo": "Soldagem Aluminotérmica",
+        "status": "Em andamento",
+        "lat": -2.514541,
+        "lon": -44.274047,
+        "inicio": "2023-03-15",
+        "fim": "",
+        "foto_antes": "antes2.jpg",
+        "foto_depois": ""
+    },
+    {
+        "nome": "Recuperação Linha Bacabeira",
+        "tipo": "Manutenção de Linha",
+        "status": "Concluída",
+        "lat": -2.984162,
+        "lon": -44.316283,
+        "inicio": "2021-08-10",
+        "fim": "2021-12-05",
+        "foto_antes": "antes3.jpg",
+        "foto_depois": "depois3.jpg"
+    },
+    {
+        "nome": "Obra Ponte Ferroviária",
+        "tipo": "Infraestrutura",
+        "status": "Em andamento",
+        "lat": -3.037609,
+        "lon": -44.276618,
+        "inicio": "2024-04-01",
+        "fim": "",
+        "foto_antes": "antes4.jpg",
+        "foto_depois": ""
+    }
+]
+df = pd.DataFrame(dados)
+
+st.set_page_config(layout="wide")
+st.title("Painel de Obras DL Engenharia")
+st.write("Visualize e filtre as obras no mapa interativo.")
+
+# Filtros
+tipos = ["Todos"] + sorted(df["tipo"].unique())
+status_opcoes = ["Todos"] + sorted(df["status"].unique())
+tipo_filtro = st.sidebar.selectbox("Filtrar por Tipo de Serviço", tipos)
+status_filtro = st.sidebar.selectbox("Filtrar por Status", status_opcoes)
+
+# Aplicar filtros
+df_filtrado = df.copy()
+if tipo_filtro != "Todos":
+    df_filtrado = df_filtrado[df_filtrado["tipo"] == tipo_filtro]
+if status_filtro != "Todos":
+    df_filtrado = df_filtrado[df_filtrado["status"] == status_filtro]
+
+# Criar mapa centralizado
+m = folium.Map(location=[-2.7, -44.3], zoom_start=9)
+for idx, row in df_filtrado.iterrows():
+    html = f"""
+    <h4>{row['nome']}</h4>
+    <b>Tipo:</b> {row['tipo']}<br>
+    <b>Status:</b> {row['status']}<br>
+    <b>Início:</b> {row['inicio']}<br>
+    <b>Fim:</b> {row['fim'] if row['fim'] else 'Em andamento'}<br>
+    """
+    # Adiciona fotos, se disponíveis
+    if row['foto_antes']:
+        html += f"<b>Antes:</b><br><img src='{row['foto_antes']}' width='120'><br>"
+    if row['foto_depois']:
+        html += f"<b>Depois:</b><br><img src='{row['foto_depois']}' width='120'><br>"
+    popup = folium.Popup(html, max_width=250)
+    color = 'green' if row['status'] == 'Concluída' else 'blue'
+    folium.Marker(
+        location=[row['lat'], row['lon']],
+        popup=popup,
+        icon=folium.Icon(color=color, icon='info-sign')
+    ).add_to(m)
+
+# Mostrar mapa no Streamlit
+st_folium(m, width=900, height=600)
+
+# Mostrar tabela filtrada
+with st.expander("Ver tabela de obras filtradas"):
+    st.dataframe(df_filtrado)
